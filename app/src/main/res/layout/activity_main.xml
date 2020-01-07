@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="6dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="6dp">
+
+            <Button
+                android:id="@+id/cameraResearch"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Camera Research" />
+
+            <Button
+                android:id="@+id/swipeItemRecycleview"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Swipable RecycleView" />
+
+            <Button
+                android:id="@+id/webView"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Web View" />
+
+            <Button
+                android:id="@+id/fingerPrint"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Finger Print" />
+
+            <Button
+                android:id="@+id/storageDetails"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Storage Details" />
+
+            <Button
+                android:id="@+id/marketingName"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Marketing Names" />
+
+            <Button
+                android:id="@+id/networkDetails"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Network Names" />
+
+            <Button
+                android:id="@+id/getnetworkDetails"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="GET Network Names" />
+
+            <Button
+                android:id="@+id/getScreenResolution"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="GET Screen Resolution" />
+
+            <Button
+                android:id="@+id/getDeviceConfig"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="GET Device Configuration" />
+
+            <Button
+                android:id="@+id/getDeviceSensors"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="GET Device Sensors" />
+
+            <Button
+                android:id="@+id/getAllSensors"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="All Device Sensors" />
+
+            <Button
+                android:id="@+id/getCPUHardware"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="All Device CPU" />
+
+            <Button
+                android:id="@+id/getImei"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Imei" />
+
+            <Button
+                android:id="@+id/getDeviceInfo"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="All DeviceInfo2" />
+
+            <Button
+                android:id="@+id/getfinaldetails"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="All Final Details With Functions" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>
