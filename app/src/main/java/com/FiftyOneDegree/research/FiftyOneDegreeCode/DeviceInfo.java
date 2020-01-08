@@ -57,14 +57,22 @@ public class DeviceInfo {
     private String currentBatteryCharge;
     @SerializedName("backCameraMegaPixels")
     private Float backCameraMegaPixels;
+    @SerializedName("backCameraMegaPixelsOriginal")
+    private Float backCameraMegaPixelsOriginal;
     @SerializedName("cameraTypes")
     private String cameraTypes;
     @SerializedName("frontCameraMegaPixels")
     private float frontCameraMegaPixels;
+    @SerializedName("frontCameraMegaPixelsOriginal")
+    private float frontCameraMegaPixelsOriginal;
     @SerializedName("hasCamera")
     private boolean hasCamera;
     @SerializedName("hasNFC")
     private boolean hasNFC;
+    @SerializedName("hasFingerPrint")
+    private boolean hasFingerPrint;
+    @SerializedName("hasBluetooth")
+    private boolean hasBluetooth;
     @SerializedName("supportsPhoneCalls")
     private boolean supportsPhoneCalls;
     @SerializedName("deviceType")
@@ -105,6 +113,8 @@ public class DeviceInfo {
     private int cpuCores;
     @SerializedName("cpuDesigner")
     private String cpuDesigner;
+    @SerializedName("cpuMaximumFrequencyOriginal")
+    private String cpuMaximumFrequencyOriginal;
     @SerializedName("cpuMaximumFrequency")
     private String cpuMaximumFrequency;
     @SerializedName("soC")
@@ -371,6 +381,14 @@ public class DeviceInfo {
         this.backCameraMegaPixels = backCameraMegaPixels;
     }
 
+    public Float getBackCameraMegaPixelsOriginal() {
+        return backCameraMegaPixelsOriginal;
+    }
+
+    public void setBackCameraMegaPixelsOriginal(Float backCameraMegaPixelsOriginal) {
+        this.backCameraMegaPixelsOriginal = backCameraMegaPixelsOriginal;
+    }
+
     public String getCameraTypes() {
         return cameraTypes;
     }
@@ -387,6 +405,14 @@ public class DeviceInfo {
         this.frontCameraMegaPixels = frontCameraMegaPixels;
     }
 
+    public float getFrontCameraMegaPixelsOriginal() {
+        return frontCameraMegaPixelsOriginal;
+    }
+
+    public void setFrontCameraMegaPixelsOriginal(float frontCameraMegaPixelsOriginal) {
+        this.frontCameraMegaPixelsOriginal = frontCameraMegaPixelsOriginal;
+    }
+
     public boolean getHasCamera() {
         return hasCamera;
     }
@@ -401,6 +427,22 @@ public class DeviceInfo {
 
     public void setHasNFC(boolean hasNFC) {
         this.hasNFC = hasNFC;
+    }
+
+    public boolean isHasFingerPrint() {
+        return hasFingerPrint;
+    }
+
+    public void setHasFingerPrint(boolean hasFingerPrint) {
+        this.hasFingerPrint = hasFingerPrint;
+    }
+
+    public boolean isHasBluetooth() {
+        return hasBluetooth;
+    }
+
+    public void setHasBluetooth(boolean hasBluetooth) {
+        this.hasBluetooth = hasBluetooth;
     }
 
     public boolean getSupportsPhoneCalls() {
@@ -561,6 +603,14 @@ public class DeviceInfo {
 
     public void setCpuDesigner(String cpuDesigner) {
         this.cpuDesigner = cpuDesigner;
+    }
+
+    public String getCpuMaximumFrequencyOriginal() {
+        return cpuMaximumFrequencyOriginal;
+    }
+
+    public void setCpuMaximumFrequencyOriginal(String cpuMaximumFrequencyOriginal) {
+        this.cpuMaximumFrequencyOriginal = cpuMaximumFrequencyOriginal;
     }
 
     public String getCpuMaximumFrequency() {

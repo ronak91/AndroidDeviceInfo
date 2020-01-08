@@ -62,16 +62,22 @@ public class FinalDetailsActivity extends AppCompatActivity {
         txt_frontCameraMegaPixelsOriginal = findViewById(R.id.txt_frontCameraMegaPixelsOriginal);
         txt_backCameraMegaPixelsOriginal = findViewById(R.id.txt_backCameraMegaPixelsOriginal);
 
+
+
+
         // fingerprint
         txt_fingerprint.setText(isFingerPrintAvailable().toString());
+
         // deviceRAM
         txt_deviceRAM.setText(getTotalRAM());
         // maxInternalStorage
         txt_maxInternalStorage.setText(maxInternalStorage());
         // CPU Processor Frequency
         txt_CPUMaximumFrequency.setText(getCPUMaximumFrequency());
+
         // bluetooth
         txt_bluetooth.setText(isBluetoothAvailable().toString());
+
         // screenPixelsHeight
         txt_screenPixelsWidth.setText(getMyScreenWidthInPixel().toString());
         // screenPixelsHeight
@@ -80,6 +86,7 @@ public class FinalDetailsActivity extends AppCompatActivity {
         txt_deviceResolution.setText(screenResolution());
         // screenInchesDiagonal
         txt_screenInchesDiagonal.setText(getScreenInchesDiagonal());
+
         // frontCameraMegaPixels
         txt_frontCameraMegaPixels.setText(String.valueOf(getCameraResolutionInMp(this, Camera.CameraInfo.CAMERA_FACING_FRONT)));
         // frontCameraMegaPixelsOriginal
@@ -190,7 +197,7 @@ public class FinalDetailsActivity extends AppCompatActivity {
                 StatFs stat = new StatFs(path.getPath());
                 long blockSize = stat.getBlockSizeLong();
                 long totalBlocks = stat.getBlockCountLong();
-                return formatSize(totalBlocks * blockSize);
+                return formatSize((double) (totalBlocks * blockSize));
             } else {
                 return "";
             }
@@ -331,7 +338,7 @@ public class FinalDetailsActivity extends AppCompatActivity {
 
 
     //Format Size
-    public static String formatSize(long size) {
+    private static String formatSize(Double size) {
         String suffix = null;
         if (size >= 1024) {
             suffix = "KB";
@@ -339,20 +346,20 @@ public class FinalDetailsActivity extends AppCompatActivity {
             if (size >= 1024) {
                 suffix = "MB";
                 size /= 1024;
-                if (size >= 1024) {
-                    suffix = "GB";
-                    size /= 1024;
-                }
+//                if (size >= 1024) {
+                      suffix = "GB";
+                      size /= 1024;
+//                }
             }
         }
-        StringBuilder resultBuffer = new StringBuilder(Long.toString(size));
+        StringBuilder resultBuffer = new StringBuilder(Double.toString(size));
 
-        int commaOffset = resultBuffer.length() - 3;
-        while (commaOffset > 0) {
-            resultBuffer.insert(commaOffset, ',');
-            commaOffset -= 3;
-        }
-        if (suffix != null) resultBuffer.append(suffix);
+//        int commaOffset = resultBuffer.length() - 3;
+//        while (commaOffset > 0) {
+//            resultBuffer.insert(commaOffset, ',');
+//            commaOffset -= 3;
+//        }
+//        if (suffix != null) resultBuffer.append(suffix);
         return resultBuffer.toString();
     }
 

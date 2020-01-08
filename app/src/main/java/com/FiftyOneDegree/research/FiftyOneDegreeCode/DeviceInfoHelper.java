@@ -3,7 +3,8 @@ package com.FiftyOneDegree.research.FiftyOneDegreeCode;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ActivityManager;
+import android.app.usage.StorageStatsManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -13,6 +14,7 @@ import android.graphics.Point;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.hardware.fingerprint.FingerprintManager;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -20,8 +22,11 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
+import android.os.storage.StorageManager;
+import android.os.storage.StorageVolume;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.text.format.Formatter;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -35,8 +40,13 @@ import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.text.DecimalFormat;
 import java.util.List;
+import java.util.UUID;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static android.content.Context.FINGERPRINT_SERVICE;
 
 
 public class DeviceInfoHelper {
@@ -76,11 +86,15 @@ public class DeviceInfoHelper {
         deviceInfo.setUserAgentWebView(SessionManager.getInstance().getUserAgent());
 
         deviceInfo.setCurrentBatteryCharge(String.valueOf(getBatteryPercentage(context)));
-        deviceInfo.setBackCameraMegaPixels(getCameraResolutionInMp(context, Camera.CameraInfo.CAMERA_FACING_BACK));
+        deviceInfo.setBackCameraMegaPixels(getBackCameraResolutionInMpOriginal(context));
+        deviceInfo.setBackCameraMegaPixelsOriginal(getCameraResolutionInMp(context, Camera.CameraInfo.CAMERA_FACING_BACK));
         deviceInfo.setCameraTypes(getCameraTypes(context));
-        deviceInfo.setFrontCameraMegaPixels(getCameraResolutionInMp(context, Camera.CameraInfo.CAMERA_FACING_FRONT));
+        deviceInfo.setFrontCameraMegaPixels(getFrontCameraResolutionInMpOriginal(context));
+        deviceInfo.setFrontCameraMegaPixelsOriginal(getCameraResolutionInMp(context, Camera.CameraInfo.CAMERA_FACING_FRONT));
         deviceInfo.setHasCamera(hasCamera());
         deviceInfo.setHasNFC(hasNFC(context));
+        deviceInfo.setHasFingerPrint(hasFingerPrint(context));
+        deviceInfo.setHasBluetooth(hasBluetooth());
         deviceInfo.setSupportsPhoneCalls(hasSupportPhoneCalls(context));
         deviceInfo.setDeviceType(getDeviceType(context));
         deviceInfo.setIsMobile(isSmartPhone(context));
@@ -88,7 +102,7 @@ public class DeviceInfoHelper {
         deviceInfo.setIsSmartPhone(isSmartPhone(context));
         deviceInfo.setIsTablet(isTablet(context));
         deviceInfo.setDeviceRAM(getRAM(context));
-        deviceInfo.setMaxInternalStorage(getMaxInternalMemorySize());
+        deviceInfo.setMaxInternalStorage(getMaxInternalMemorySize(context));
         deviceInfo.setHardwareFamily(getHardwareFamily());
         deviceInfo.setHardwareModel(getHardwareModel());
         deviceInfo.setHardwareModelVariants(getHardwareModelVariants());
@@ -102,7 +116,8 @@ public class DeviceInfoHelper {
         deviceInfo.setCpuCores(getCPUCores());
         deviceInfo.setCpuDesigner(getCPUDesigner());
         deviceInfo.setSoC(getCPUDesigner());
-        deviceInfo.setCpuMaximumFrequency(getCPUMaximumFrequency());
+        deviceInfo.setCpuMaximumFrequencyOriginal(getCPUMaximumFrequency());
+        deviceInfo.setCpuMaximumFrequency(getCPUMaximumFrequencyOriginal());
 
         deviceInfo.setScreenInchesDiagonal(getScreenInchesDiagonal(context));
         deviceInfo.setScreenInchesDiagonalRounded(getScreenInchesDiagonalRounded(context));
@@ -277,10 +292,42 @@ public class DeviceInfoHelper {
     }
 
     private static long getRAM(Context context) {
-        ActivityManager actManager = (ActivityManager) context.getSystemService(context.ACTIVITY_SERVICE);
-        ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
-        actManager.getMemoryInfo(memInfo);
-        return memInfo.totalMem;
+        RandomAccessFile reader = null;
+        String load = null;
+        DecimalFormat twoDecimalForm = new DecimalFormat("#.##");
+        double totRam = 0;
+        try {
+            reader = new RandomAccessFile("/proc/meminfo", "r");
+            load = reader.readLine();
+
+            // Get the Number value from the string
+            Pattern p = Pattern.compile("(\\d+)");
+            Matcher m = p.matcher(load);
+            String value = "";
+            while (m.find()) {
+                value = m.group(1);
+            }
+            reader.close();
+
+            totRam = Double.parseDouble(value);
+
+            double ram = totRam / 1048576.0; // in gb
+            if (ram > 0) {
+                if (ram <= 0.5) {
+                    return 512;
+                } else {
+                    Integer ramGB = Integer.parseInt(String.format("%.0f", Math.ceil(ram)));
+                    return ramGB * 1024;
+                }
+            }
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return 0;
+        } finally {
+
+        }
+        return 0;
     }
 
     private static String getTelephonyOperator(Context context, String operatorType) {
@@ -354,6 +401,14 @@ public class DeviceInfoHelper {
         return maxResolution;
     }
 
+    private static Float getFrontCameraResolutionInMpOriginal(Context context) {
+        return (float) Math.ceil(getCameraResolutionInMp(context, Camera.CameraInfo.CAMERA_FACING_FRONT));
+    }
+
+    private static Float getBackCameraResolutionInMpOriginal(Context context) {
+        return (float) Math.ceil(getCameraResolutionInMp(context, Camera.CameraInfo.CAMERA_FACING_BACK));
+    }
+
     private static String getCameraTypes(Context context) {
         String cameraType = "";
         if (context.getPackageManager().hasSystemFeature(
@@ -374,6 +429,37 @@ public class DeviceInfoHelper {
 
     private static boolean hasNFC(Context context) {
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC);
+    }
+
+    private static boolean hasFingerPrint(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                FingerprintManager fingerprintManager = (FingerprintManager) context.getSystemService(FINGERPRINT_SERVICE);
+                // Check whether the device has a Fingerprint sensor.
+                if (fingerprintManager == null || !fingerprintManager.isHardwareDetected()) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (Exception e) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    private static boolean hasBluetooth() {
+        try {
+            final BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (mBluetoothAdapter == null) {
+                return false;
+            } else {
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private static boolean hasSupportPhoneCalls(Context context) {
@@ -421,12 +507,76 @@ public class DeviceInfoHelper {
         return isSmartPhone && hasSupportPhoneCalls(context);
     }
 
-    private static String getMaxInternalMemorySize() {
-        File path = Environment.getDataDirectory();
-        StatFs stat = new StatFs(path.getPath());
-        long blockSize = stat.getBlockSizeLong();
-        long totalBlocks = stat.getBlockCountLong();
-        return String.valueOf(totalBlocks * blockSize);
+    private static String getMaxInternalMemorySize(Context context) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+
+            StorageStatsManager storageStatsManager = null;
+            storageStatsManager = (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
+
+            StorageManager storageManager = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+            if (storageManager == null || storageStatsManager == null) {
+                return "";
+            }
+            List<StorageVolume> storageVolumes = storageManager.getStorageVolumes();
+            for (StorageVolume storageVolume : storageVolumes) {
+                final String uuidStr = storageVolume.getUuid();
+                try {
+
+                    final UUID uuid = uuidStr == null ? StorageManager.UUID_DEFAULT : UUID.fromString(uuidStr);
+                    Double size = Double.valueOf(storageStatsManager.getTotalBytes(uuid));
+
+                    if (size >= 1000) {
+                        size /= 1000;
+                        if (size >= 1000) {
+                            size /= 1000;
+//                          if (size >= 1000) {
+                                size /= 1000;
+//                          }
+                        }
+                    }
+                    String deviceStorage = size.toString();
+
+                    return deviceStorage;
+                } catch (Exception e) {
+                    // IGNORED
+                    Log.e("Storage", "showStorageVolumes not working");
+                    return "";
+                }
+            }
+        } else {
+            File path = Environment.getExternalStorageDirectory();
+            StatFs stat = new StatFs(path.getPath());
+            long blockSize = stat.getBlockSizeLong();
+            long totalBlocks = stat.getBlockCountLong();
+            return formatSize((double) (totalBlocks * blockSize));
+        }
+        return "";
+    }
+
+
+    private static String formatSize(Double size) {
+        String suffix = null;
+        if (size >= 1024) {
+            suffix = "KB";
+            size /= 1024;
+            if (size >= 1024) {
+                suffix = "MB";
+                size /= 1024;
+//                if (size >= 1024) {
+                suffix = "GB";
+                size /= 1024;
+//                }
+            }
+        }
+        StringBuilder resultBuffer = new StringBuilder(Double.toString(size));
+
+//        int commaOffset = resultBuffer.length() - 3;
+//        while (commaOffset > 0) {
+//            resultBuffer.insert(commaOffset, ',');
+//            commaOffset -= 3;
+//        }
+//        if (suffix != null) resultBuffer.append(suffix);
+        return resultBuffer.toString();
     }
 
     private static String getHardwareFamily() {
@@ -574,13 +724,21 @@ public class DeviceInfoHelper {
         return sb.toString().replace(" ", "").replace(":", "");
     }
 
-    private static String getCPUMaximumFrequency() {
+    private static String getCPUMaximumFrequencyOriginal() {
         String cpuMaxFreq = "";
+        Double roundedFreq = 0.0;
+        Double cpuMaxFreqMHz = 0.0;
+        Double cpuMaxFreqGhz = 0.0;
         RandomAccessFile reader = null;
         try {
             reader = new RandomAccessFile("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq", "r");
             cpuMaxFreq = reader.readLine();
             reader.close();
+            cpuMaxFreqMHz = Double.valueOf(cpuMaxFreq) / 1000;
+            cpuMaxFreqGhz = Double.valueOf(cpuMaxFreq) / 1000000;
+
+            roundedFreq = Math.round(cpuMaxFreqGhz * 10) / 10.0;
+
         } catch (
                 IOException e) {
             e.printStackTrace();
@@ -593,7 +751,34 @@ public class DeviceInfoHelper {
                 }
             }
         }
-        return cpuMaxFreq;
+        return roundedFreq.toString();
+    }
+
+    private static String getCPUMaximumFrequency() {
+        String cpuMaxFreq = "";
+        Double roundedFreq = 0.0;
+        Double cpuMaxFreqMHz = 0.0;
+        Double cpuMaxFreqGhz = 0.0;
+        RandomAccessFile reader = null;
+        try {
+            reader = new RandomAccessFile("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq", "r");
+            cpuMaxFreq = reader.readLine();
+            reader.close();
+            cpuMaxFreqGhz = Double.valueOf(cpuMaxFreq) / 1000000;
+
+        } catch (
+                IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return cpuMaxFreqGhz.toString();
     }
 
     private static double getScreenInchesDiagonal(Context context) {
@@ -738,7 +923,20 @@ public class DeviceInfoHelper {
 
     private static int getScreenHeightInPixel(Context context) {
         DisplayMetrics displayMetrics = getDisplayMetrics(context);
-        return displayMetrics.heightPixels;
+        return displayMetrics.heightPixels + getNavigationBarHeight(context);
+    }
+
+    private static Integer getNavigationBarHeight(Context context) {
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            DisplayMetrics metrics = new DisplayMetrics();
+            windowManager.getDefaultDisplay().getMetrics(metrics);
+            Integer usableHeight = metrics.heightPixels;
+            windowManager.getDefaultDisplay().getRealMetrics(metrics);
+            Integer realHeight = metrics.heightPixels;
+            return (realHeight > usableHeight) ? realHeight - usableHeight : 0;
+        }
+        return 0;
     }
 
     @NonNull

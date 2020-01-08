@@ -15,6 +15,9 @@ import com.FiftyOneDegree.research.CameraResearch.CameraResearch
 import com.FiftyOneDegree.research.DeviceConfig.DeviceConfigActivity
 import com.FiftyOneDegree.research.DeviceHardwareConfig.DeviceHardwareActivity
 import com.FiftyOneDegree.research.DisplayActivity.ScreenResolution
+import com.FiftyOneDegree.research.FiftyOneDegreeCode.DeviceInfo
+import com.FiftyOneDegree.research.FiftyOneDegreeCode.DeviceInfoHelper
+import com.FiftyOneDegree.research.FiftyOneDegreeCode.DeviceInfoUtil
 import com.FiftyOneDegree.research.FinalDetails.FinalDetailsActivity
 import com.FiftyOneDegree.research.IMEI.DeviceInfoActivity
 import com.FiftyOneDegree.research.RecycleDragDrop.RvMainActivity
@@ -42,23 +45,23 @@ class MainScreen : AppCompatActivity() {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED ||
+            ) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED ||
+            ) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.CAMERA
-            ) != PackageManager.PERMISSION_GRANTED ||
+            ) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.READ_PHONE_STATE
-            ) != PackageManager.PERMISSION_GRANTED ||
+            ) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_NETWORK_STATE
-            ) != PackageManager.PERMISSION_GRANTED ||
+            ) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.PACKAGE_USAGE_STATS
@@ -66,7 +69,10 @@ class MainScreen : AppCompatActivity() {
         ) {
             RequestPermission()
         } else {
-            RequestPermission()
+            val deviceInfo: DeviceInfo = DeviceInfoHelper.prepareDeviceInfo(this)
+            Log.e("Network ", "51 Degree Info : " + Gson().toJson(deviceInfo).toString())
+            val requestBody: String = DeviceInfoUtil.convertToJSON(deviceInfo)
+            //      Log.e("Network ", "51 Degree Info : " + Gson().toJson(requestBody).toString())
         }
 
         cameraResearch.setOnClickListener {
@@ -143,6 +149,7 @@ class MainScreen : AppCompatActivity() {
         }
 
 
+
     }
 
     fun RequestPermission() {
@@ -182,14 +189,16 @@ class MainScreen : AppCompatActivity() {
             } catch (e: Exception) {
                 networkTypes = emptyList()
             }
-            Log.e("Network ", "Network Type" + networkType)
-            Log.e("Network ", "Network Info" + Gson().toJson(networkTypes).toString())
+  //          Log.e("Network ", "Network Type" + networkType)
+  //          Log.e("Network ", "Network Info" + Gson().toJson(networkTypes).toString())
             Toast.makeText(this, "Network Type" + networkType, Toast.LENGTH_LONG).show()
-            Toast.makeText(
-                this,
-                "Network Info" + Gson().toJson(networkTypes).toString(),
-                Toast.LENGTH_LONG
-            ).show()
+//            Toast.makeText(
+//                this,
+//                "Network Info" + Gson().toJson(networkTypes).toString(),
+//                Toast.LENGTH_LONG
+//            ).show()
+
+
 
         }
 
