@@ -121,6 +121,8 @@ public class DeviceInfo {
     private String soC;
     @SerializedName("screenInchesDiagonal")
     private double screenInchesDiagonal;
+    @SerializedName("ScreenInchesDiagonalOriginal")
+    private double ScreenInchesDiagonalOriginal;
     @SerializedName("screenInchesDiagonalRounded")
     private int screenInchesDiagonalRounded;
     @SerializedName("screenInchesHeight")
@@ -635,6 +637,14 @@ public class DeviceInfo {
 
     public void setScreenInchesDiagonal(double screenInchesDiagonal) {
         this.screenInchesDiagonal = screenInchesDiagonal;
+    }
+
+    public double getScreenInchesDiagonalOriginal() {
+        return ScreenInchesDiagonalOriginal;
+    }
+
+    public void setScreenInchesDiagonalOriginal(double screenInchesDiagonalOriginal) {
+        ScreenInchesDiagonalOriginal = screenInchesDiagonalOriginal;
     }
 
     public int getScreenInchesDiagonalRounded() {

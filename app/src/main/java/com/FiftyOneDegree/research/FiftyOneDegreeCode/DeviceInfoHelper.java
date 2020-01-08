@@ -119,7 +119,8 @@ public class DeviceInfoHelper {
         deviceInfo.setCpuMaximumFrequencyOriginal(getCPUMaximumFrequency());
         deviceInfo.setCpuMaximumFrequency(getCPUMaximumFrequencyOriginal());
 
-        deviceInfo.setScreenInchesDiagonal(getScreenInchesDiagonal(context));
+        deviceInfo.setScreenInchesDiagonal(getScreenInchesDiagonalOriginal(context));
+        deviceInfo.setScreenInchesDiagonalOriginal(getScreenInchesDiagonal(context));
         deviceInfo.setScreenInchesDiagonalRounded(getScreenInchesDiagonalRounded(context));
         deviceInfo.setScreenInchesHeight(getScreenInchesHeight(context));
         deviceInfo.setScreenInchesSquare(getScreenInchesSquare(context));
@@ -268,7 +269,7 @@ public class DeviceInfoHelper {
         return (double) Math.round(value * scale) / scale;
     }
 
-    private static Point getScreenResolution(Context context) {
+    private static String getScreenResolution(Context context) {
         WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = windowManager.getDefaultDisplay();
         Point screenResolution = new Point();
@@ -277,7 +278,7 @@ public class DeviceInfoHelper {
             throw new RuntimeException("Unsupported Android version.");
         display.getRealSize(screenResolution);
 
-        return screenResolution;
+        return screenResolution.x+" X "+screenResolution.y;
     }
 
     private static int getBatteryPercentage(Context context) {
@@ -787,6 +788,20 @@ public class DeviceInfoHelper {
         double x = Math.pow(getScreenWidthInPixel(context) / dm.xdpi, 2);
         double y = Math.pow(getScreenHeightInPixel(context) / dm.ydpi, 2);
         return Math.sqrt(x + y);
+    }
+
+    private static double getScreenInchesDiagonalOriginal(Context context){
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Point point = new Point();
+        windowManager.getDefaultDisplay().getRealSize(point);
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        Integer width = point.x;
+        Integer height = point.y;
+        Double wi = width / Double.valueOf(displayMetrics.xdpi);
+        Double hi = height / Double.valueOf(displayMetrics.ydpi);
+        Double x = Math.pow(wi, 2.0);
+        Double y = Math.pow(hi, 2.0);
+        return Double.valueOf((Math.round(Math.sqrt(x + y) * 10.0) / 10.0));
     }
 
     private static int getScreenInchesDiagonalRounded(Context context) {
