@@ -22,6 +22,7 @@ class DeviceConfigActivity: AppCompatActivity() {
         txt_availableMaxCPUFreqMHz.text = getMaxCPUFreqMHz().toString()
         txt_availableMaxCPUFreqGHz.text = getCPUMaximumFrequencyGHz().toString()
         txt_availableCPUInfo.text = ReadCPUinfo().toString()
+        txt_newCPUInfo.text = ReadCPUinfo().toString()
 
     }
 
@@ -170,8 +171,7 @@ class DeviceConfigActivity: AppCompatActivity() {
         val cmd: ProcessBuilder
         var result = ""
         try {
-            val args =
-                arrayOf("/system/bin/cat", "/proc/cpuinfo")
+            val args = arrayOf("/system/bin/cat", "/proc/cpuinfo")
             cmd = ProcessBuilder(*args)
             val process = cmd.start()
             val `in`: InputStream = process.inputStream

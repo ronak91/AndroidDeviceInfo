@@ -16,6 +16,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
@@ -34,14 +35,19 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,7 +66,9 @@ public class DeviceInfoHelper {
     public static DeviceInfo prepareDeviceInfo(Context context) {
         DeviceInfo deviceInfo = new DeviceInfo();
         deviceInfo.setPackageName(getPackageName(context));
+        deviceInfo.setSimType(getSimType(context));
         deviceInfo.setImeiNumber(getIMEINumber(context));
+        deviceInfo.setMeidNumber(getMEIDNumber(context));
         deviceInfo.setTacCode(getTacCode(context));
         deviceInfo.setManufacturer(getManufacturer());
         deviceInfo.setModel(getModel());
@@ -113,6 +121,7 @@ public class DeviceInfoHelper {
         deviceInfo.setNativeDevice(getNativeDevice());
         deviceInfo.setNativeModel(getNativeModel());
         deviceInfo.setCpu(getCPU());
+        deviceInfo.setCpuDetails(getCPUDetails());
         deviceInfo.setCpuCores(getCPUCores());
         deviceInfo.setCpuDesigner(getCPUDesigner());
         deviceInfo.setSoC(getCPUDesigner());
@@ -165,11 +174,75 @@ public class DeviceInfoHelper {
         return context.getApplicationContext().getPackageName();
     }
 
+    private static String getSimType(Context context){
+        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        int phoneType = telephonyManager.getPhoneType();
+        switch (phoneType) {
+            case TelephonyManager.PHONE_TYPE_CDMA:
+                return "CDMA";
+            case TelephonyManager.PHONE_TYPE_GSM:
+                return "GSM";
+            case TelephonyManager.PHONE_TYPE_NONE:
+                return "NONE";
+            case TelephonyManager.PHONE_TYPE_SIP:
+                return "SIP";
+        }
+        return "";
+    }
+
     @SuppressLint("MissingPermission")
     private static String getIMEINumber(Context context) {
+        String Simtype = getSimType(context);
+
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        if (checkPermission(context, Manifest.permission.READ_PHONE_STATE)) {
-            return telephonyManager.getDeviceId();
+        if(Simtype!="NONE") {
+            if (checkPermission(context, Manifest.permission.READ_PHONE_STATE)) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                    if(Simtype.equals("GSM")) {
+                        return (telephonyManager.getDeviceId() == null ? "" : "," + telephonyManager.getDeviceId());
+                    } else { return  ""; }
+                } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                    if(Simtype.equals("GSM")) {
+                        return (telephonyManager.getDeviceId(0) == null ? "" : "," + telephonyManager.getDeviceId(0))+ "" + (telephonyManager.getDeviceId(1) == null ? "" : "," + telephonyManager.getDeviceId(1)) + "" + (telephonyManager.getDeviceId(2) == null ? "" : "," + telephonyManager.getDeviceId(2)) + "" + (telephonyManager.getDeviceId(3) == null ? "" : "," + telephonyManager.getDeviceId(3));
+                    } else { return  ""; }
+
+                } else {
+                    if(Simtype.equals("GSM")) {
+                        return (telephonyManager.getImei(0) == null ? "" : "," + telephonyManager.getImei(0))+ "" + (telephonyManager.getImei(1) == null ? "" : "," + telephonyManager.getImei(1)) + "" + (telephonyManager.getImei(2) == null ? "" : "," + telephonyManager.getImei(2)) + "" + (telephonyManager.getImei(3) == null ? "" : "," + telephonyManager.getImei(3));
+                    } else { return  ""; }
+                }
+            }
+        } else {
+            return "";
+        }
+        return "Unknown";
+    }
+
+    @SuppressLint("MissingPermission")
+    private static String getMEIDNumber(Context context) {
+        String Simtype = getSimType(context);
+
+        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        if(Simtype!="NONE") {
+            if (checkPermission(context, Manifest.permission.READ_PHONE_STATE)) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                    if(Simtype.equals("CDMA")) {
+                        return (telephonyManager.getDeviceId() == null ? "" : "," + telephonyManager.getDeviceId());
+                    } else { return  ""; }
+                } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                    if(Simtype.equals("CDMA")) {
+                        return (telephonyManager.getDeviceId(0) == null ? "" : "," + telephonyManager.getDeviceId(0))+ "" + (telephonyManager.getDeviceId(1) == null ? "" : "," + telephonyManager.getDeviceId(1)) + "" + (telephonyManager.getDeviceId(2) == null ? "" : "," + telephonyManager.getDeviceId(2)) + "" + (telephonyManager.getDeviceId(3) == null ? "" : "," + telephonyManager.getDeviceId(3));
+                    } else { return  ""; }
+
+                } else {
+                    if(Simtype.equals("CDMA")) {
+                        return (telephonyManager.getMeid(0) == null ? "" : "," + telephonyManager.getMeid(0))+ "" + (telephonyManager.getMeid(1) == null ? "" : "," + telephonyManager.getMeid(1)) + "" + (telephonyManager.getMeid(2) == null ? "" : "," + telephonyManager.getMeid(2)) + "" + (telephonyManager.getMeid(3) == null ? "" : "," + telephonyManager.getMeid(3));
+                    } else { return  ""; }
+
+                }
+            }
+        } else {
+            return "";
         }
         return "Unknown";
     }
@@ -269,7 +342,7 @@ public class DeviceInfoHelper {
         return (double) Math.round(value * scale) / scale;
     }
 
-    private static String getScreenResolution(Context context) {
+    private static Point getScreenResolution(Context context) {
         WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = windowManager.getDefaultDisplay();
         Point screenResolution = new Point();
@@ -278,7 +351,7 @@ public class DeviceInfoHelper {
             throw new RuntimeException("Unsupported Android version.");
         display.getRealSize(screenResolution);
 
-        return screenResolution.x+" X "+screenResolution.y;
+        return screenResolution;
     }
 
     private static int getBatteryPercentage(Context context) {
@@ -437,7 +510,7 @@ public class DeviceInfoHelper {
             try {
                 FingerprintManager fingerprintManager = (FingerprintManager) context.getSystemService(FINGERPRINT_SERVICE);
                 // Check whether the device has a Fingerprint sensor.
-                if (fingerprintManager == null || !fingerprintManager.isHardwareDetected()) {
+                if (fingerprintManager == null || fingerprintManager.isHardwareDetected()) {
                     return true;
                 } else {
                     return false;
@@ -531,7 +604,7 @@ public class DeviceInfoHelper {
                         if (size >= 1000) {
                             size /= 1000;
 //                          if (size >= 1000) {
-                                size /= 1000;
+                            size /= 1000;
 //                          }
                         }
                     }
@@ -652,6 +725,29 @@ public class DeviceInfoHelper {
             }
         }
         return sb.toString();
+    }
+
+    private static String getCPUDetails() {
+        if (new File("/proc/cpuinfo").exists()) {
+            try {
+
+                String[] DATA = {"/system/bin/cat", "/proc/cpuinfo"};
+                ProcessBuilder processBuilder = new ProcessBuilder(DATA);
+                Process process = processBuilder.start();
+                InputStream inputStream = process.getInputStream();
+                byte[] byteArry = new byte[1024];
+                String output = "";
+                while (inputStream.read(byteArry) != -1) {
+                    output = output + new String(byteArry);
+                }
+                inputStream.close();
+                return output;
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return "";
+            }
+        }
+        return "";
     }
 
     private static int getCPUCores() {
@@ -967,56 +1063,77 @@ public class DeviceInfoHelper {
     }
 
     private static String getConnectivityType(Context context) {
-        ConnectivityManager manager = (ConnectivityManager) context.getSystemService(context.CONNECTIVITY_SERVICE);
-        boolean isNetwork = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnectedOrConnecting();
-        boolean isWifi = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnectedOrConnecting();
+        try{
+            ConnectivityManager manager = (ConnectivityManager) context.getSystemService(context.CONNECTIVITY_SERVICE);
+            boolean isNetwork = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnectedOrConnecting();
+            boolean isWifi = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnectedOrConnecting();
 
-        if (isNetwork) {
-            return "Network";
-        } else if (isWifi) {
-            return "Wifi";
+            if (isNetwork) {
+                return "Network";
+            } else if (isWifi) {
+                return "Wifi";
+            }
+        } catch(Exception e){
+            return "";
         }
         return "";
     }
 
     private static String getNetworkType(Context context) {
-        TelephonyManager mTelephonyManager = (TelephonyManager)
-                context.getSystemService(Context.TELEPHONY_SERVICE);
-        int networkType = mTelephonyManager.getNetworkType();
-        switch (networkType) {
-            case TelephonyManager.NETWORK_TYPE_GPRS:
-                return "GPRS";
-            case TelephonyManager.NETWORK_TYPE_EDGE:
-                return "EDGE";
-            case TelephonyManager.NETWORK_TYPE_CDMA:
-                return "CDMA";
-            case TelephonyManager.NETWORK_TYPE_1xRTT:
-                return "1xRTT";
-            case TelephonyManager.NETWORK_TYPE_IDEN:
-                return "IDEN";
-            case TelephonyManager.NETWORK_TYPE_UMTS:
-                return "UMTS";
-            case TelephonyManager.NETWORK_TYPE_EVDO_0:
-                return "EVDO_0";
-            case TelephonyManager.NETWORK_TYPE_EVDO_A:
-                return "EVDO_A";
-            case TelephonyManager.NETWORK_TYPE_HSDPA:
-                return "HSDPA";
-            case TelephonyManager.NETWORK_TYPE_HSUPA:
-                return "HSUPA";
-            case TelephonyManager.NETWORK_TYPE_HSPA:
-                return "HSPA";
-            case TelephonyManager.NETWORK_TYPE_EVDO_B:
-                return "EVDO_B";
-            case TelephonyManager.NETWORK_TYPE_EHRPD:
-                return "EHRPD";
-            case TelephonyManager.NETWORK_TYPE_HSPAP:
-                return "HSPAP";
-            case TelephonyManager.NETWORK_TYPE_LTE:
-                return "LTE";
-            default:
-                return "Unknown";
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = cm.getActiveNetworkInfo();
+        if (info == null || !info.isConnected())
+            return "-"; // not connected
+        if (info.getType() == ConnectivityManager.TYPE_WIFI)
+            return "Wifi";
+        if (info.getType() == ConnectivityManager.TYPE_MOBILE) {
+            int networkType = info.getSubtype();
+            switch (networkType) {
+                case TelephonyManager.NETWORK_TYPE_GPRS:
+                    return "GPRS";
+                case TelephonyManager.NETWORK_TYPE_EDGE:
+                    return "EDGE";
+                case TelephonyManager.NETWORK_TYPE_CDMA:
+                    return "CDMA";
+                case TelephonyManager.NETWORK_TYPE_1xRTT:
+                    return "1xRTT";
+                case TelephonyManager.NETWORK_TYPE_IDEN:     // api< 8: replace by 11
+                    return "IDEN";
+                case TelephonyManager.NETWORK_TYPE_GSM:      // api<25: replace by 16
+                    return "GSM";
+                case TelephonyManager.NETWORK_TYPE_UMTS:
+                    return "UMTS";
+                case TelephonyManager.NETWORK_TYPE_EVDO_0:
+                    return "EVDO_0";
+                case TelephonyManager.NETWORK_TYPE_EVDO_A:
+                    return "EVDO_A";
+                case TelephonyManager.NETWORK_TYPE_HSDPA:
+                    return "HSDPA";
+                case TelephonyManager.NETWORK_TYPE_HSUPA:
+                    return "HSUPA";
+                case TelephonyManager.NETWORK_TYPE_HSPA:
+                    return "HSPA";
+                case TelephonyManager.NETWORK_TYPE_EVDO_B:   // api< 9: replace by 12
+                    return "EVDO_B";
+                case TelephonyManager.NETWORK_TYPE_EHRPD:    // api<11: replace by 14
+                    return "EHRPD";
+                case TelephonyManager.NETWORK_TYPE_HSPAP:    // api<13: replace by 15
+                    return "HSPAP";
+                case TelephonyManager.NETWORK_TYPE_TD_SCDMA: // api<25: replace by 17
+                    return "SCDMA";
+                case TelephonyManager.NETWORK_TYPE_LTE:      // api<11: replace by 13
+                    return "GSM";
+                case TelephonyManager.NETWORK_TYPE_IWLAN:    // api<25: replace by 18
+                    return "IWLAN";
+                case 19: // LTE_CA
+                    return "LTE_CA";
+                case TelephonyManager.NETWORK_TYPE_NR:       // api<29: replace by 20
+                    return "NR";
+                default:
+                    return "";
+            }
         }
+        return "Unknown";
     }
 }
 

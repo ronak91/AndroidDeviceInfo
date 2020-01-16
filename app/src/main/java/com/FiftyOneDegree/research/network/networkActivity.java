@@ -103,7 +103,7 @@ public class networkActivity extends AppCompatActivity {
 
         Alldetails = Alldetails + "\nLte On Cdma : " + getLteOnCdmaMode();
 
-        Alldetails = Alldetails + "\nLte On Cdma : " + getLteOnCdmaMode();
+        Alldetails = Alldetails + "\nOriginal Network Type : " + getNetworkType(this);
 
 
 
@@ -233,8 +233,10 @@ public class networkActivity extends AppCompatActivity {
                 return "CDMA";
             case TelephonyManager.NETWORK_TYPE_1xRTT:
                 return "1xRTT";
-            case TelephonyManager.NETWORK_TYPE_IDEN:
+            case TelephonyManager.NETWORK_TYPE_IDEN:     // api< 8: replace by 11
                 return "IDEN";
+            case TelephonyManager.NETWORK_TYPE_GSM:      // api<25: replace by 16
+                return "GSM";
             case TelephonyManager.NETWORK_TYPE_UMTS:
                 return "UMTS";
             case TelephonyManager.NETWORK_TYPE_EVDO_0:
@@ -247,17 +249,83 @@ public class networkActivity extends AppCompatActivity {
                 return "HSUPA";
             case TelephonyManager.NETWORK_TYPE_HSPA:
                 return "HSPA";
-            case TelephonyManager.NETWORK_TYPE_EVDO_B:
+            case TelephonyManager.NETWORK_TYPE_EVDO_B:   // api< 9: replace by 12
                 return "EVDO_B";
-            case TelephonyManager.NETWORK_TYPE_EHRPD:
+            case TelephonyManager.NETWORK_TYPE_EHRPD:    // api<11: replace by 14
                 return "EHRPD";
-            case TelephonyManager.NETWORK_TYPE_HSPAP:
+            case TelephonyManager.NETWORK_TYPE_HSPAP:    // api<13: replace by 15
                 return "HSPAP";
-            case TelephonyManager.NETWORK_TYPE_LTE:
-                return "LTE";
+            case TelephonyManager.NETWORK_TYPE_TD_SCDMA: // api<25: replace by 17
+                return "SCDMA";
+            case TelephonyManager.NETWORK_TYPE_LTE:      // api<11: replace by 13
+                return "GSM";
+            case TelephonyManager.NETWORK_TYPE_IWLAN:    // api<25: replace by 18
+                return "IWLAN";
+            case 19: // LTE_CA
+                return "LTE_CA";
+            case TelephonyManager.NETWORK_TYPE_NR:       // api<29: replace by 20
+                return "NR";
             default:
                 return "Unknown";
         }
+    }
+
+
+    private static String getNetworkType(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = cm.getActiveNetworkInfo();
+        if (info == null || !info.isConnected())
+            return "-"; // not connected
+        if (info.getType() == ConnectivityManager.TYPE_WIFI)
+            return "Wifi";
+        if (info.getType() == ConnectivityManager.TYPE_MOBILE) {
+            int networkType = info.getSubtype();
+            switch (networkType) {
+                case TelephonyManager.NETWORK_TYPE_GPRS:
+                    return "GPRS";
+                case TelephonyManager.NETWORK_TYPE_EDGE:
+                    return "EDGE";
+                case TelephonyManager.NETWORK_TYPE_CDMA:
+                    return "CDMA";
+                case TelephonyManager.NETWORK_TYPE_1xRTT:
+                    return "1xRTT";
+                case TelephonyManager.NETWORK_TYPE_IDEN:     // api< 8: replace by 11
+                    return "IDEN";
+                case TelephonyManager.NETWORK_TYPE_GSM:      // api<25: replace by 16
+                    return "GSM";
+                case TelephonyManager.NETWORK_TYPE_UMTS:
+                    return "UMTS";
+                case TelephonyManager.NETWORK_TYPE_EVDO_0:
+                    return "EVDO_0";
+                case TelephonyManager.NETWORK_TYPE_EVDO_A:
+                    return "EVDO_A";
+                case TelephonyManager.NETWORK_TYPE_HSDPA:
+                    return "HSDPA";
+                case TelephonyManager.NETWORK_TYPE_HSUPA:
+                    return "HSUPA";
+                case TelephonyManager.NETWORK_TYPE_HSPA:
+                    return "HSPA";
+                case TelephonyManager.NETWORK_TYPE_EVDO_B:   // api< 9: replace by 12
+                    return "EVDO_B";
+                case TelephonyManager.NETWORK_TYPE_EHRPD:    // api<11: replace by 14
+                    return "EHRPD";
+                case TelephonyManager.NETWORK_TYPE_HSPAP:    // api<13: replace by 15
+                    return "HSPAP";
+                case TelephonyManager.NETWORK_TYPE_TD_SCDMA: // api<25: replace by 17
+                    return "SCDMA";
+                case TelephonyManager.NETWORK_TYPE_LTE:      // api<11: replace by 13
+                    return "GSM";
+                case TelephonyManager.NETWORK_TYPE_IWLAN:    // api<25: replace by 18
+                    return "IWLAN";
+                case 19: // LTE_CA
+                    return "LTE_CA";
+                case TelephonyManager.NETWORK_TYPE_NR:       // api<29: replace by 20
+                    return "NR";
+                default:
+                    return "";
+            }
+        }
+        return "Unknown";
     }
 
     public String getNetworkClass() {

@@ -7,6 +7,10 @@ public class DeviceInfo {
     private String packageName;
     @SerializedName("imeiNumber")
     private String imeiNumber;
+    @SerializedName("simType")
+    private String simType;
+    @SerializedName("meidNumber")
+    private String meidNumber;
     @SerializedName("tacCode")
     private String tacCode;
     @SerializedName("manufacturer")
@@ -109,6 +113,8 @@ public class DeviceInfo {
     private String nativeModel;
     @SerializedName("cpu")
     private String cpu;
+    @SerializedName("cpuDetails")
+    private String cpuDetails;
     @SerializedName("cpuCores")
     private int cpuCores;
     @SerializedName("cpuDesigner")
@@ -121,8 +127,8 @@ public class DeviceInfo {
     private String soC;
     @SerializedName("screenInchesDiagonal")
     private double screenInchesDiagonal;
-    @SerializedName("ScreenInchesDiagonalOriginal")
-    private double ScreenInchesDiagonalOriginal;
+    @SerializedName("screenInchesDiagonalOriginal")
+    private double screenInchesDiagonalOriginal;
     @SerializedName("screenInchesDiagonalRounded")
     private int screenInchesDiagonalRounded;
     @SerializedName("screenInchesHeight")
@@ -181,6 +187,22 @@ public class DeviceInfo {
 
     public void setPackageName(String packageName) {
         this.packageName = packageName;
+    }
+
+    public String getSimType() {
+        return simType;
+    }
+
+    public void setSimType(String simType) {
+        this.simType = simType;
+    }
+
+    public String getMeidNumber() {
+        return meidNumber;
+    }
+
+    public void setMeidNumber(String meidNumber) {
+        this.meidNumber = meidNumber;
     }
 
     public String getImeiNumber() {
@@ -591,6 +613,14 @@ public class DeviceInfo {
         this.cpu = cpu;
     }
 
+    public String getCpuDetails() {
+        return cpuDetails;
+    }
+
+    public void setCpuDetails(String cpuDetails) {
+        this.cpuDetails = cpuDetails;
+    }
+
     public int getCpuCores() {
         return cpuCores;
     }
@@ -640,11 +670,11 @@ public class DeviceInfo {
     }
 
     public double getScreenInchesDiagonalOriginal() {
-        return ScreenInchesDiagonalOriginal;
+        return screenInchesDiagonalOriginal;
     }
 
     public void setScreenInchesDiagonalOriginal(double screenInchesDiagonalOriginal) {
-        ScreenInchesDiagonalOriginal = screenInchesDiagonalOriginal;
+        this.screenInchesDiagonalOriginal = screenInchesDiagonalOriginal;
     }
 
     public int getScreenInchesDiagonalRounded() {

@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings.Secure
 import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import com.FiftyOneDegree.research.R
 import com.google.android.gms.ads.identifier.AdvertisingIdClient
 import kotlinx.android.synthetic.main.activity_imei.*
+
 
 class ImeiActivity : AppCompatActivity() {
 
@@ -50,14 +50,32 @@ class ImeiActivity : AppCompatActivity() {
         } else {
             getIMEIValue()
         }
-
     }
+
+
 
     @SuppressLint("MissingPermission")
     fun getIMEIValue() {
 
-        val telephonyManager =
-            applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        val telephonyManager = applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+
+        TelephonyManager.PHONE_TYPE_CDMA
+        val phoneType: Int = telephonyManager.getPhoneType()
+        when (phoneType) {
+            TelephonyManager.PHONE_TYPE_CDMA -> {
+                txtPhoneType.text = "CDMA"
+            }
+            TelephonyManager.PHONE_TYPE_GSM -> {
+                txtPhoneType.text = "GSM"
+            }
+            TelephonyManager.PHONE_TYPE_NONE -> {
+                txtPhoneType.text = "NONE"
+            }
+            TelephonyManager.PHONE_TYPE_SIP -> {
+                txtPhoneType.text = "SIP"
+            }
+        }
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             txtImei.text = "DeviceId:" + telephonyManager.deviceId
             txtMeid.text = "Meid: same as above"
@@ -66,7 +84,6 @@ class ImeiActivity : AppCompatActivity() {
             txtMeid.text = "Meid: same as above"
 
         } else {
-
             txtImei.text = "DeviceId:" + telephonyManager.deviceId + "\n Imei: " +
                     telephonyManager.getImei(0) + " " + telephonyManager.getImei(1) + " " + telephonyManager.getImei(2)
             txtMeid.text = "Meid " + telephonyManager.getMeid(0)+" "+telephonyManager.getMeid(1)

@@ -8,6 +8,12 @@
     tools:context=".imei.ImeiActivity">
 
     <TextView
+        android:id="@+id/txtPhoneType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp" />
+
+    <TextView
         android:id="@+id/txtImei"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
