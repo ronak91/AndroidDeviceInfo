@@ -1,7 +1,12 @@
-package com.FiftyOneDegree.research.FiftyOneDegreeCode;
+package library.fiftyonedegrees.helper;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+
+import library.fiftyonedegrees.activity.MainActivity;
+import library.fiftyonedegrees.util.DeviceInfoConstants;
+import library.fiftyonedegrees.util.DeviceInfoUtil;
 
 public class DeviceInfoPermission {
 
@@ -26,6 +31,12 @@ public class DeviceInfoPermission {
             listener.onPermissionGranted();
             return;
         }
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(DeviceInfoConstants.EXTRA_PERMISSIONS, permissions);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+        MainActivity.startActivity(context, intent, listener);
+        DeviceInfoPermissionHelper.setFirstRequest(context, permissions);
     }
 
 }

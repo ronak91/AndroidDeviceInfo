@@ -1,10 +1,10 @@
-package com.FiftyOneDegree.research.FiftyOneDegreeCode;
+package library.fiftyonedegrees.helper;
 
 import java.util.ArrayList;
 
 public interface DeviceInfoPermissionListener {
 
-    void onPermissionGranted();
+  void onPermissionGranted();
 
-    void onPermissionDenied(ArrayList<String> notGrantedPermissions);
+  void onPermissionDenied(ArrayList<String> notGrantedPermissions);
 }
